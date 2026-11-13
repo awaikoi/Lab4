@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Новий товар' if is_new else 'Редагування товару' }}{% endblock %}
+{% block content %}
+<h1 class="mb-5 text-2xl font-bold">{{ 'Додати товар' if is_new else 'Редагувати товар' }}</h1>
+<form method="post" enctype="multipart/form-data" class="max-w-xl space-y-4">
+    <label class="block">
+        <span class="mb-1 block font-medium">Назва товару</span>
+        <input name="name" required value="{{ product.get('name', '') }}" class="w-full rounded-lg border border-line bg-white/70 px-3 py-2">
+    </label>
+    <label class="block">
+        <span class="mb-1 block font-medium">Ціна (грн)</span>
+        <input name="price" type="number" min="0" step="0.01" required value="{{ product.get('price', '') }}" class="w-full rounded-lg border border-line bg-white/70 px-3 py-2">
+    </label>
+    <label class="block">
+        <span class="mb-1 block font-medium">Зображення товару</span>
+        <input name="image_file" type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="block w-full rounded-lg border border-line bg-white/70 p-2">
+        <span class="mt-1 block text-sm text-ink/70">JPG, PNG, GIF або WEBP; максимум 5 МБ.</span>
+    </label>
+    {% if not is_new and product.get('image_data') %}
+    <div>
+        <p class="mb-2 text-sm font-medium">Поточне зображення:</p>
+        <img src="{{ url_for('shop.product_image', product_id=product['id']) }}" alt="Поточне зображення товару" class="max-h-48 rounded-lg object-contain">
+        <p class="mt-1 text-xs text-ink/60">Щоб замінити його, виберіть новий файл.</p>
+    </div>
+    {% elif not is_new and product.get('image') %}
+    <div>
+        <p class="mb-2 text-sm font-medium">Старе зображення (URL):</p>
+        <img src="{{ product['image'] }}" alt="Зображення товару" class="max-h-48 rounded-lg object-contain">
+    </div>
+    {% endif %}
+    <div class="flex gap-2">
+        <button type="submit" class="rounded-lg bg-accent px-4 py-2 font-medium text-white">Зберегти</button>
+        <a href="{{ url_for('admin.products') }}" class="rounded-lg border border-line px-4 py-2">Скасувати</a>
+    </div>
+</form>
+{% endblock %}

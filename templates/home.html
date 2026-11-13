@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Головна{% endblock %}
+{% block content %}
+<h1 class="mb-4 text-3xl font-bold">Ласкаво просимо на головну сторінку</h1>
+<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div>
+        <img
+            src="https://i.pinimg.com/1200x/f7/1b/70/f71b7001403de650b263f2053822e493.jpg"
+            alt="Ілюстрація"
+            class="w-full rounded-lg bg-gray-200 shadow-md"
+        >
+    </div>
+    <div>
+        <p class="mb-4 text-lg">
+            Ми — команда ентузіастів, які працюють над створенням інноваційних
+            рішень. Наша місія — зробити технології доступними та зрозумілими
+            для кожного.
+        </p>
+        <a href="{{ url_for('shop.shop') }}" class="rounded-lg bg-accent px-4 py-2
+       font-medium text-white transition hover:bg-[#9f1239] active:scale-95">Перейти до магазину</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Керування товарами{% endblock %}
+{% block content %}
+<div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <h1 class="text-2xl font-bold">Товари</h1>
+    <a href="{{ url_for('admin.new_product') }}" class="rounded-lg bg-accent px-4 py-2 text-white">Додати товар</a>
+</div>
+{% if products %}
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {% for product in products %}
+    <article class="rounded-xl border border-line bg-white/30 p-4">
+        {% if product['image_data'] %}
+        <img src="{{ url_for('shop.product_image', product_id=product['id']) }}" alt="{{ product['name'] }}" class="mb-3 h-40 w-full rounded-lg object-contain">
+        {% elif product['image'] %}
+        <img src="{{ product['image'] }}" alt="{{ product['name'] }}" class="mb-3 h-40 w-full rounded-lg object-contain">
+        {% endif %}
+        <h2 class="font-semibold">{{ product['name'] }}</h2>
+        <p class="mb-3">{{ product['price']|money }}</p>
+        <div class="flex gap-2">
+            <a href="{{ url_for('admin.edit_product', product_id=product['id']) }}" class="rounded-lg border border-line px-3 py-1.5">Редагувати</a>
+            <form method="post" action="{{ url_for('admin.delete_product', product_id=product['id']) }}" onsubmit="return confirm('Видалити товар?')">
+                <button class="rounded-lg bg-red-700 px-3 py-1.5 text-white">Видалити</button>
+            </form>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<p>Товарів поки немає.</p>
+{% endif %}
+{% endblock %}

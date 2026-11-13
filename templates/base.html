@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Наш проєкт{% endblock %}</title>
+    <!-- Tailwind CSS 4 (збірка для браузера). Зручно для навчання; для робочого сайту CSS збирають заздалегідь. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-base: #ff91b4;     /* фон сторінки */
+            --color-surface: #ffaac5;  /* фон панелей */
+            --color-line: #ffd1df;     /* рамки */
+            --color-ink: #4c0519;      /* основний текст */
+            --color-accent: #881337;   /* кнопки та акценти */
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+
+{# Пункти меню: (endpoint, назва) #}
+{% set nav_items = [
+    ('home', 'Головна'),
+    ('shop.shop', 'Магазин'),
+    ('shop.cart', 'Кошик'),
+    ('about', 'Про нас'),
+    ('feedback.feedback', "Зворотний зв'язок"),
+    ('admin.admin', 'Адмін-панель'),
+] %}
+
+<body class="flex min-h-screen flex-col bg-base font-sans text-ink antialiased">
+    <header class="mx-2.5 mt-2.5 rounded-xl border border-line bg-surface px-4">
+        <nav class="flex min-h-[60px] flex-wrap items-center justify-between py-2">
+            <a href="{{ url_for('home') }}" class="text-xl font-semibold text-ink transition hover:text-accent">Мій проєкт</a>
+
+            <button id="menu-toggle" type="button" class="rounded-lg p-2 text-ink/80 transition hover:bg-white/30 lg:hidden" aria-label="Відкрити меню" aria-expanded="false" aria-controls="menu">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+
+            <ul id="menu" class="mt-2 hidden w-full flex-col gap-1 lg:mt-0 lg:flex lg:w-auto lg:flex-row lg:items-center">
+                {% for endpoint, label in nav_items %}
+                <li>
+                    <a href="{{ url_for(endpoint) }}"
+                       class="block rounded-lg px-3 py-2 text-sm transition lg:py-1.5
+                              {{ 'bg-white/40 text-ink' if request.endpoint == endpoint else 'text-ink/70 hover:bg-white/30 hover:text-ink' }}">
+                        {{ label }}
+                        {% if endpoint == 'shop.cart' and cart_count %}
+                        <span class="ml-1 rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-white">{{ cart_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </header>
+
+    <main class="mx-auto w-full max-w-6xl grow px-2.5 py-6">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+            <div class="mb-4 rounded-xl border px-4 py-3 text-sm {% if category == 'error' %}border-red-700/30 bg-red-100 text-red-900{% else %}border-green-700/30 bg-green-100 text-green-900{% endif %}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endwith %}
+
+        <div class="rounded-xl border border-line bg-surface p-6">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="mx-2.5 mb-2.5 rounded-xl border border-line bg-surface py-4">
+        <p class="px-4 text-center text-sm text-ink/70">&copy; {{ current_year }} Наш проєкт. Усі права захищені.</p>
+    </footer>
+
+    <script>
+        // Меню на вузьких екранах: показати / приховати
+        const toggle = document.getElementById('menu-toggle');
+        const menu = document.getElementById('menu');
+        toggle.addEventListener('click', () => {
+            const opened = menu.classList.toggle('hidden') === false;
+            toggle.setAttribute('aria-expanded', opened);
+            toggle.setAttribute('aria-label', opened ? 'Закрити меню' : 'Відкрити меню');
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

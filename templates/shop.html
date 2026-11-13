@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Магазин{% endblock %}
+{% block content %}
+<h1 class="mb-5 text-2xl font-bold">Магазин</h1>
+{% if products %}
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {% for product in products %}
+    <article class="overflow-hidden rounded-xl border border-line bg-white/30 p-4">
+        {% if product['image_data'] %}
+        <img src="{{ url_for('shop.product_image', product_id=product['id']) }}" alt="{{ product['name'] }}" class="mb-3 h-48 w-full rounded-lg object-contain">
+        {% elif product['image'] %}
+        <img src="{{ product['image'] }}" alt="{{ product['name'] }}" class="mb-3 h-48 w-full rounded-lg object-contain">
+        {% endif %}
+        <h2 class="font-semibold">{{ product['name'] }}</h2>
+        <p class="mb-3">{{ product['price']|money }}</p>
+        <form method="post" action="{{ url_for('shop.add_to_cart', product_id=product['id']) }}">
+            <button class="rounded-lg bg-accent px-4 py-2 text-white">До кошика</button>
+        </form>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<p>У магазині поки немає товарів.</p>
+{% endif %}
+{% endblock %}
