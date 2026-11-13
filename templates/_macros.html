@@ -1,0 +1,55 @@
+{# Повторно використовувані елементи інтерфейсу керування магазином #}
+
+{% macro status_badge(status) %}
+    {% set status_styles = {
+        'Нове': 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+        'В обробці': 'bg-amber-50 text-amber-700 ring-amber-600/20',
+        'Відправлено': 'bg-sky-50 text-sky-700 ring-sky-600/20',
+        'Доставлено': 'bg-violet-50 text-violet-700 ring-violet-600/20'
+    } %}
+
+    {% set badge_style = status_styles.get(
+        status,
+        'bg-gray-100 text-gray-700 ring-gray-500/20'
+    ) %}
+
+    <span class="inline-flex items-center rounded-md px-2.5 py-1
+                 text-xs font-medium ring-1 ring-inset {{ badge_style }}">
+        {{ status }}
+    </span>
+{% endmacro %}
+
+
+{% macro admin_nav(active) %}
+    {% set navigation_items = [
+        {
+            'id': 'orders',
+            'label': 'Замовлення та звернення',
+            'endpoint': 'admin.admin'
+        },
+        {
+            'id': 'products',
+            'label': 'Каталог товарів',
+            'endpoint': 'admin.products'
+        }
+    ] %}
+
+    <nav class="mb-8 flex flex-wrap items-center gap-2 border-b border-gray-200 pb-3"
+         aria-label="Навігація адміністратора">
+
+        {% for item in navigation_items %}
+            {% set is_active = active == item.id %}
+
+            <a href="{{ url_for(item.endpoint) }}"
+               {% if is_active %}aria-current="page"{% endif %}
+               class="rounded-lg px-4 py-2 text-sm font-medium transition-colors
+                      {% if is_active %}
+                          bg-white/40 text-accent
+                      {% else %}
+                          text-ink/70 hover:bg-white/30 hover:text-ink
+                      {% endif %}">
+                {{ item.label }}
+            </a>
+        {% endfor %}
+    </nav>
+{% endmacro %}
