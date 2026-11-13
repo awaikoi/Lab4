@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% from "_macros.html" import admin_nav, status_badge %}
+
+{% block title %}Керування магазином{% endblock %}
+
+{% block content %}
+<div class="space-y-10">
+
+    {# Заголовок сторінки #}
+    <header>
+        <p class="mb-2 text-sm font-semibold uppercase tracking-widest text-accent">
+            Адміністрування
+        </p>
+
+        <h1 class="text-3xl font-bold text-ink">
+            Керування магазином
+        </h1>
+
+        <p class="mt-2 text-sm text-ink/70">
+            Замовлення та повідомлення відвідувачів сайту.
+        </p>
+    </header>
+
+    {{ admin_nav('orders') }}
+
+    {# Статистичні показники #}
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+        <div class="rounded-xl border border-line bg-white/30 p-5">
+            <p class="text-sm font-medium text-ink/70">
+                Кількість замовлень
+            </p>
+
+            <p class="mt-3 text-3xl font-bold text-accent">
+                {{ orders|length }}
+            </p>
+        </div>
+
+        <div class="rounded-xl border border-line bg-white/30 p-5">
+            <p class="text-sm font-medium text-ink/70">
+                Отримані повідомлення
+            </p>
+
+            <p class="mt-3 text-3xl font-bold text-accent">
+                {{ feedback|length }}
+            </p>
+        </div>
+
+    </section>
+
+    {# Таблиця замовлень #}
+    <section>
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="text-xl font-bold text-ink">
+                    Замовлення
+                </h2>
+
+                <p class="mt-1 text-sm text-ink/60">
+                    Список оформлених покупок.
+                </p>
+            </div>
+
+            <span class="rounded-full border border-line bg-white/40 px-3 py-1 text-sm font-semibold text-accent">
+                {{ orders|length }} записів
+            </span>
+        </div>
+
+        {% if orders %}
+        <div class="overflow-hidden rounded-xl border border-line bg-white/25">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+
+                    <thead class="border-b border-line bg-white/30">
+                        <tr class="text-xs font-semibold uppercase tracking-wide text-ink/70">
+                            <th class="px-5 py-4">№</th>
+                            <th class="px-5 py-4">Email покупця</th>
+                            <th class="px-5 py-4">Сума</th>
+                            <th class="px-5 py-4">Статус</th>
+                            <th class="px-5 py-4">Дата</th>
+                            <th class="px-5 py-4 text-right">Дії</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-line">
+                        {% for order in orders %}
+                        <tr class="transition-colors hover:bg-white/25">
+
+                            <td class="whitespace-nowrap px-5 py-4 font-semibold text-ink">
+                                #{{ order['id'] }}
+                            </td>
+
+                            <td class="whitespace-nowrap px-5 py-4 text-ink/80">
+                                {{ order['email'] }}
+                            </td>
+
+                            <td class="whitespace-nowrap px-5 py-4 font-semibold text-ink">
+                                {{ order['total_price']|money }}
+                            </td>
+
+                            <td class="whitespace-nowrap px-5 py-4">
+                                {{ status_badge(order['status']) }}
+                            </td>
+
+                            <td class="whitespace-nowrap px-5 py-4 text-ink/70">
+                                {{ order['date'] }}
+                            </td>
+
+                            <td class="whitespace-nowrap px-5 py-4">
+                                <div class="flex justify-end gap-3">
+
+                                    <a href="{{ url_for('admin.order_details', order_id=order['id']) }}"
+                                       class="font-semibold text-accent transition hover:underline">
+                                        Деталі
+                                    </a>
+
+                                    <form action="{{ url_for('admin.delete_order', order_id=order['id']) }}"
+                                          method="post"
+                                          onsubmit="return confirm('Видалити замовлення №{{ order['id'] }}?')">
+
+                                        <button type="submit"
+                                                class="font-semibold text-red-800 transition hover:underline">
+                                            Видалити
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="rounded-xl border border-dashed border-line bg-white/20 px-6 py-12 text-center">
+            <h3 class="font-semibold text-ink">
+                Замовлень поки немає
+            </h3>
+
+            <p class="mt-2 text-sm text-ink/60">
+                Оформлені покупки з'являтимуться в цьому розділі.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+    {# Повідомлення зворотного зв'язку #}
+    <section>
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="text-xl font-bold text-ink">
+                    Звернення клієнтів
+                </h2>
+
+                <p class="mt-1 text-sm text-ink/60">
+                    Повідомлення з форми зворотного зв'язку.
+                </p>
+            </div>
+
+            <span class="rounded-full border border-line bg-white/40 px-3 py-1 text-sm font-semibold text-accent">
+                {{ feedback|length }} повідомлень
+            </span>
+        </div>
+
+        {% if feedback %}
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+
+            {% for item in feedback %}
+            <article class="rounded-xl border border-line bg-white/25 p-5 transition-colors hover:bg-white/40">
+
+                <div class="mb-4 flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <h3 class="truncate font-bold text-ink">
+                            {{ item['name'] }}
+                        </h3>
+
+                        <a href="mailto:{{ item['email'] }}"
+                           class="mt-1 block truncate text-sm font-medium text-accent hover:underline">
+                            {{ item['email'] }}
+                        </a>
+                    </div>
+
+                    <span class="shrink-0 rounded-lg bg-white/40 px-2.5 py-1 text-xs font-semibold text-ink/70">
+                        #{{ item['id'] }}
+                    </span>
+                </div>
+
+                <div class="mb-4 rounded-lg border border-line bg-white/30 p-4">
+                    <p class="break-words whitespace-pre-wrap text-sm leading-relaxed text-ink/90">{{ item['message'] }}</p>
+                </div>
+
+                <footer class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+
+                    <time class="text-xs text-ink/60">
+                        {{ item['created_at'] }}
+                    </time>
+
+                    <form action="{{ url_for('admin.delete_feedback', feedback_id=item['id']) }}"
+                          method="post"
+                          onsubmit="return confirm('Видалити повідомлення №{{ item['id'] }}?')">
+
+                        <button type="submit"
+                                class="rounded-lg px-3 py-2 text-sm font-semibold text-red-800 transition hover:bg-red-100/60">
+                            Видалити
+                        </button>
+                    </form>
+
+                </footer>
+            </article>
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+        <div class="rounded-xl border border-dashed border-line bg-white/20 px-6 py-12 text-center">
+            <h3 class="font-semibold text-ink">
+                Повідомлень поки немає
+            </h3>
+
+            <p class="mt-2 text-sm text-ink/60">
+                Нові звернення відвідувачів відображатимуться тут.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}
