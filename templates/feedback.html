@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Зворотний зв'язок{% endblock %}
+{% block content %}
+<h1 class="mb-4 text-3xl font-bold">Зворотний зв'язок</h1>
+
+<form id="feedbackForm" class="mx-auto max-w-lg">
+    <div class="mb-4">
+        <label for="name" class="mb-2 block text-sm font-bold text-gray-700">Ім'я:</label>
+        <input type="text" id="name" name="name" required class="w-full rounded-md border border-gray-300 px-3 py-2">
+    </div>
+    <div class="mb-4">
+        <label for="email" class="mb-2 block text-sm font-bold text-gray-700">Email:</label>
+        <input type="email" id="email" name="email" required class="w-full rounded-md border border-gray-300 px-3 py-2">
+    </div>
+    <div class="mb-6">
+        <label for="message" class="mb-2 block text-sm font-bold text-gray-700">Повідомлення:</label>
+        <textarea id="message" name="message" required class="h-32 w-full rounded-md border border-gray-300 px-3 py-2"></textarea>
+    </div>
+    <p id="formError" class="mb-4 hidden rounded-md border border-red-300 bg-red-50 px-4 py-3 text-red-800" role="alert"></p>
+    <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700">Надіслати</button>
+</form>
+
+<!-- Модальне вікно -->
+<div id="thankYouModal" class="fixed inset-0 hidden h-full w-full overflow-y-auto bg-gray-600/50" role="dialog" aria-modal="true" aria-labelledby="thankYouTitle">
+    <div class="relative top-20 mx-auto w-96 max-w-[90%] rounded-md border bg-white p-5 shadow-lg">
+        <div class="mt-3 text-center">
+            <h3 id="thankYouTitle" class="text-lg font-medium text-gray-900">Дякуємо за ваш відгук!</h3>
+            <p class="mt-2 px-7 py-3 text-sm text-gray-500">Ми цінуємо ваш час та увагу.</p>
+            <button id="closeModal" type="button" class="w-full rounded-md bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-md hover:bg-blue-700">Закрити</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('feedbackForm');
+    const modal = document.getElementById('thankYouModal');
+    const errorBox = document.getElementById('formError');
+
+    function showError(text) {
+        errorBox.textContent = text;
+        errorBox.classList.remove('hidden');
+    }
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();  // не перезавантажуємо сторінку — надсилаємо дані через fetch
+        errorBox.classList.add('hidden');
+        try {
+            const response = await fetch("{{ url_for('feedback.feedback') }}", {
+                method: 'POST',
+                body: new FormData(form),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                modal.classList.remove('hidden');
+                form.reset();
+            } else {
+                showError(data.error || 'Не вдалося надіслати відгук. Спробуйте ще раз.');
+            }
+        } catch (error) {
+            showError('Не вдалося зв\'язатися із сервером. Спробуйте ще раз.');
+        }
+    });
+
+    document.getElementById('closeModal').addEventListener('click', () => modal.classList.add('hidden'));
+</script>
+{% endblock %}
