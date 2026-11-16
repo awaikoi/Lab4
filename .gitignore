@@ -1,4 +1,5 @@
 .venv
-/__pycahce__/*
-routes/__pycahce__/*
-db.sqlite
+__pycache__/
+*.py[cod]
+*.sqlite
+routes/__pycache__/
