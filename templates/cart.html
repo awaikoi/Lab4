@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Мій кошик{% endblock %}
+
+{% block content %}
+
+<div class="mx-auto max-w-5xl">
+
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-ink">
+            Ваш кошик
+        </h1>
+        <p class="mt-2 text-sm text-ink/70">
+            Перевірте обрані товари та перейдіть до оформлення замовлення.
+        </p>
+    </div>
+
+    {% if lines %}
+
+    <div class="space-y-4">
+
+        {% for line in lines %}
+        <div class="rounded-xl border border-line bg-white/20 p-4 sm:p-5">
+
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                <div class="min-w-0 flex-1">
+                    <h2 class="text-lg font-semibold text-ink">
+                        {{ line.product['name'] }}
+                    </h2>
+
+                    <p class="mt-1 text-sm text-ink/60">
+                        Ціна за одиницю: {{ line.product['price']|money }}
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-4">
+
+                    <form
+                        action="{{ url_for('shop.update_cart', product_id=line.product['id']) }}"
+                        method="post"
+                        class="flex items-center gap-2"
+                    >
+                        <label for="quantity-{{ line.product['id'] }}"
+                               class="text-sm text-ink/70">
+                            Кількість:
+                        </label>
+
+                        <input
+                            type="number"
+                            id="quantity-{{ line.product['id'] }}"
+                            name="quantity"
+                            value="{{ line.quantity }}"
+                            min="0"
+                            max="{{ max_quantity }}"
+                            class="w-20 rounded-lg border border-line bg-white/50 px-2 py-2 text-center text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
+                            aria-label="Кількість: {{ line.product['name'] }}"
+                        >
+
+                        <button
+                            type="submit"
+                            class="text-sm font-medium text-accent transition hover:underline"
+                        >
+                            Змінити
+                        </button>
+                    </form>
+
+                    <div class="text-right">
+                        <p class="text-xs text-ink/60">
+                            Сума
+                        </p>
+                        <p class="text-lg font-bold text-ink">
+                            {{ line.subtotal|money }}
+                        </p>
+                    </div>
+
+                    <form
+                        action="{{ url_for('shop.remove_from_cart', product_id=line.product['id']) }}"
+                        method="post"
+                    >
+                        <button
+                            type="submit"
+                            class="rounded-lg border border-line px-3 py-2 text-sm text-accent transition hover:bg-white/40"
+                        >
+                            Видалити
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <div class="mt-6 flex flex-col items-end rounded-xl border border-line bg-white/20 p-5">
+        <p class="text-sm text-ink/70">
+            Загальна сума замовлення
+        </p>
+
+        <p class="mt-1 text-3xl font-bold text-accent">
+            {{ total|money }}
+        </p>
+    </div>
+
+    <section class="mt-10">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-ink">
+                Оформлення замовлення
+            </h2>
+
+            <p class="mt-2 text-sm text-ink/70">
+                Вкажіть контактні дані та адресу, за якою бажаєте отримати замовлення.
+            </p>
+        </div>
+
+        <form
+            action="{{ url_for('shop.checkout') }}"
+            method="post"
+            class="max-w-2xl space-y-5"
+        >
+
+            <div>
+                <label for="email"
+                       class="mb-2 block text-sm font-medium text-ink">
+                    Електронна пошта
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    placeholder="example@email.com"
+                    class="w-full rounded-lg border border-line bg-white/40 px-4 py-3 text-ink outline-none transition placeholder:text-ink/40 focus:border-accent focus:ring-2 focus:ring-accent/20"
+                >
+            </div>
+
+            <div>
+                <label for="address"
+                       class="mb-2 block text-sm font-medium text-ink">
+                    Адреса доставки
+                </label>
+
+                <textarea
+                    id="address"
+                    name="address"
+                    rows="3"
+                    required
+                    placeholder="Вулиця, номер будинку, квартира..."
+                    class="w-full resize-y rounded-lg border border-line bg-white/40 px-4 py-3 text-ink outline-none transition placeholder:text-ink/40 focus:border-accent focus:ring-2 focus:ring-accent/20"
+                ></textarea>
+            </div>
+
+            <button
+                type="submit"
+                class="w-full rounded-lg bg-accent px-6 py-3 font-medium text-white transition hover:bg-[#9f1239] active:scale-[0.98] sm:w-auto"
+            >
+                Підтвердити замовлення
+            </button>
+
+        </form>
+    </section>
+
+    {% else %}
+
+    <div class="rounded-xl border border-line bg-white/20 px-6 py-12 text-center">
+
+        <div class="mb-4 text-5xl">
+            ♡
+        </div>
+
+        <h2 class="text-xl font-bold text-ink">
+            Тут поки нічого немає
+        </h2>
+
+        <p class="mx-auto mt-2 max-w-md text-sm text-ink/70">
+            Схоже, ви ще не додали жодного товару.
+            Перегляньте наш асортимент та оберіть щось цікаве!
+        </p>
+
+        <a
+            href="{{ url_for('shop.shop') }}"
+            class="mt-6 inline-block rounded-lg bg-accent px-6 py-3 font-medium text-white transition hover:bg-[#9f1239]"
+        >
+            Перейти до магазину
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
