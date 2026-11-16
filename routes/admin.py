@@ -16,27 +16,42 @@ ALLOWED_IMAGE_TYPES = {
 }
 
 
+
 def read_uploaded_image():
-    """Повертає (байти, MIME, помилка). Порожній файл означає: зображення не змінювали."""
+    """Перевіряє завантажене зображення та повертає його дані."""
+
     uploaded = request.files.get('image_file')
+
     if uploaded is None or not uploaded.filename:
         return None, None, None
 
     data = uploaded.read(MAX_IMAGE_SIZE + 1)
+
     if len(data) > MAX_IMAGE_SIZE:
         return None, None, 'Зображення має бути не більше 5 МБ.'
 
-    mimetype = uploaded.mimetype
-    signatures = ALLOWED_IMAGE_TYPES.get(mimetype)
-    valid = bool(signatures and any(data.startswith(sig) for sig in signatures))
-    if mimetype == 'image/webp':
-        valid = valid and len(data) >= 12 and data[8:12] == b'WEBP'
+    # Визначаємо формат за справжньою сигнатурою файлу
+    if data.startswith(b'\xff\xd8\xff'):
+        mimetype = 'image/jpeg'
 
-    if not valid:
+    elif data.startswith(b'\x89PNG\r\n\x1a\n'):
+        mimetype = 'image/png'
+
+    elif data.startswith((b'GIF87a', b'GIF89a')):
+        mimetype = 'image/gif'
+
+    elif len(data) >= 12 and data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+        mimetype = 'image/webp'
+
+    else:
         return None, None, 'Дозволені лише справжні зображення JPG, PNG, GIF або WEBP.'
 
     return data, mimetype, None
 
+@admin_bp.errorhandler(413)
+def request_entity_too_large(error):
+    flash('Файл завеликий. Максимальний розмір зображення — 5 МБ.', 'error')
+    return redirect(url_for('admin.products'))
 
 # ------------------------------------------------- замовлення та відгуки
 

@@ -13,7 +13,12 @@
     </label>
     <label class="block">
         <span class="mb-1 block font-medium">Зображення товару</span>
-        <input name="image_file" type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="block w-full rounded-lg border border-line bg-white/70 p-2">
+        <input
+            type="file"
+            id="image_file"
+            name="image_file"
+            accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+        >
         <span class="mt-1 block text-sm text-ink/70">JPG, PNG, GIF або WEBP; максимум 5 МБ.</span>
     </label>
     {% if not is_new and product.get('image_data') %}

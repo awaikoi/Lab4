@@ -57,13 +57,74 @@
     </header>
 
     <main class="mx-auto w-full max-w-6xl grow px-2.5 py-6">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-            <div class="mb-4 rounded-xl border px-4 py-3 text-sm {% if category == 'error' %}border-red-700/30 bg-red-100 text-red-900{% else %}border-green-700/30 bg-green-100 text-green-900{% endif %}" role="alert">
-                {{ message }}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="mb-5 flex items-start gap-3 rounded-xl border p-4 shadow-sm
+                {% if category == 'error' %}
+                    border-red-300/70 bg-[#fff0f3] text-[#881337]
+                {% elif category == 'success' %}
+                    border-pink-300/70 bg-[#fff0f7] text-[#9d174d]
+                {% else %}
+                    border-[#ffd1df] bg-[#fff7fa] text-[#4c0519]
+                {% endif %}"
+                role="alert">
+
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full
+                    {% if category == 'error' %}
+                        bg-red-500/10
+                    {% elif category == 'success' %}
+                        bg-pink-500/10
+                    {% else %}
+                        bg-[#881337]/10
+                    {% endif %}">
+
+                    {% if category == 'success' %}
+                        <!-- Heart -->
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5" viewBox="0 0 24 24"
+                            fill="currentColor">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/>
+                        </svg>
+                    {% elif category == 'error' %}
+                        <!-- Warning -->
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M10.3 3.9 1.8 18.5A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-2.5L13.7 3.9a2 2 0 0 0-3.4 0Z"/>
+                            <path d="M12 9v4m0 4h.01"/>
+                        </svg>
+                    {% else %}
+                        <!-- Info -->
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4m0-4h.01"/>
+                        </svg>
+                    {% endif %}
+                </div>
+
+                <div class="min-w-0 flex-1">
+                    <p class="font-semibold">
+                        {% if category == 'error' %}
+                            Не вдалося виконати дію
+                        {% elif category == 'success' %}
+                            Успішно!
+                        {% else %}
+                            Повідомлення
+                        {% endif %}
+                    </p>
+                    <p class="mt-1 text-sm opacity-80">{{ message }}</p>
+                </div>
             </div>
-            {% endfor %}
-        {% endwith %}
+        {% endfor %}
+    {% endwith %}
+
 
         <div class="rounded-xl border border-line bg-surface p-6">
             {% block content %}{% endblock %}
