@@ -1,0 +1,137 @@
+
+{% extends "base.html" %}
+
+{% block title %}Про магазин{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    {# Заголовок #}
+    <header>
+        <p class="mb-2 text-sm font-semibold uppercase tracking-widest text-accent">
+            Про нас
+        </p>
+
+        <h1 class="text-3xl font-bold text-ink">
+            Ласкаво просимо до нашого магазину!
+        </h1>
+
+        <p class="mt-3 max-w-2xl leading-relaxed text-ink/70">
+            Ми створили цей магазин, щоб зробити покупки простими,
+            зручними та приємними. Тут ви можете знайти потрібні товари
+            та оформити замовлення всього за декілька хвилин.
+        </p>
+    </header>
+
+    {# Про магазин #}
+    <section class="rounded-xl border border-line bg-white/30 p-6">
+        <h2 class="mb-3 text-xl font-bold text-ink">
+            Хто ми?
+        </h2>
+
+        <p class="leading-relaxed text-ink/80">
+            Наш магазин — це зручний онлайн-простір для покупок.
+            Ми прагнемо зробити процес вибору та придбання товарів
+            зрозумілим для кожного відвідувача.
+        </p>
+
+        <p class="mt-3 leading-relaxed text-ink/80">
+            Ми постійно працюємо над покращенням сайту, щоб користування
+            ним було комфортним, а оформлення замовлень — максимально простим.
+        </p>
+    </section>
+
+    {# Переваги #}
+    <section>
+        <div class="mb-5">
+            <h2 class="text-xl font-bold text-ink">
+                Чому обирають нас?
+            </h2>
+
+            <p class="mt-1 text-sm text-ink/60">
+                Ми прагнемо зробити кожну покупку зручною.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+            <article class="rounded-xl border border-line bg-white/30 p-5">
+                <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-white/50 text-2xl">
+                    🛍️
+                </div>
+
+                <h3 class="font-bold text-ink">
+                    Зручний каталог
+                </h3>
+
+                <p class="mt-2 text-sm leading-relaxed text-ink/70">
+                    Усі товари зібрані в одному місці, тому знайти потрібне
+                    стало ще простіше.
+                </p>
+            </article>
+
+            <article class="rounded-xl border border-line bg-white/30 p-5">
+                <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-white/50 text-2xl">
+                    ⚡
+                </div>
+
+                <h3 class="font-bold text-ink">
+                    Просте замовлення
+                </h3>
+
+                <p class="mt-2 text-sm leading-relaxed text-ink/70">
+                    Зрозумілий процес оформлення дозволяє швидко
+                    перейти від вибору товару до покупки.
+                </p>
+            </article>
+
+            <article class="rounded-xl border border-line bg-white/30 p-5">
+                <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-white/50 text-2xl">
+                    💬
+                </div>
+
+                <h3 class="font-bold text-ink">
+                    Зворотний зв'язок
+                </h3>
+
+                <p class="mt-2 text-sm leading-relaxed text-ink/70">
+                    Ви можете залишити повідомлення через форму
+                    зворотного зв'язку на сайті.
+                </p>
+            </article>
+
+        </div>
+    </section>
+
+    {# Наш підхід #}
+    <section class="rounded-xl border border-line bg-white/30 p-6">
+        <h2 class="mb-3 text-xl font-bold text-ink">
+            Наш підхід
+        </h2>
+
+        <p class="leading-relaxed text-ink/80">
+            Ми вважаємо, що хороший інтернет-магазин повинен бути
+            зрозумілим, доступним та зручним. Саме тому приділяємо увагу
+            простоті інтерфейсу, організації каталогу та можливості
+            швидко зв'язатися з адміністрацією.
+        </p>
+    </section>
+
+    {# Контактна кнопка #}
+    <section class="rounded-xl border border-line bg-white/30 p-6 text-center">
+        <h2 class="text-xl font-bold text-ink">
+            Маєте запитання?
+        </h2>
+
+        <p class="mt-2 text-sm text-ink/70">
+            Будемо раді отримати ваші пропозиції та відгуки.
+        </p>
+
+        <a href="{{ url_for('feedback.feedback') }}"
+           class="mt-5 inline-block rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-85">
+            Зв'язатися з нами
+        </a>
+    </section>
+
+</div>
+{% endblock %}
