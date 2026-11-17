@@ -31,7 +31,12 @@ def build_cart_lines():
     """Рядки кошика з актуальними даними товарів із бази (назва, ціна беруться звідти, а не з сесії)."""
     cart = get_cart()
     lines = [
-        {'product': p, 'quantity': cart[p['id']], 'subtotal': round(p['price'] * cart[p['id']], 2)}
+        {
+            'product': p,
+            'quantity': cart[p['id']],
+            'unit_price': models.effective_product_price(p),
+            'subtotal': round(models.effective_product_price(p) * cart[p['id']], 2),
+        }
         for p in models.get_products_by_ids(cart.keys())
     ]
     # Якщо товар видалили з магазину, прибираємо його й з кошика
@@ -58,7 +63,29 @@ def product_image(product_id):
 
 @shop_bp.route('/shop')
 def shop():
-    return render_template('shop.html', products=models.get_products())
+    search = request.args.get('q', '').strip()
+    category_id = request.args.get('category', type=int)
+    min_price = request.args.get('min_price', type=float)
+    max_price = request.args.get('max_price', type=float)
+    on_sale = request.args.get('sale') == '1'
+    sort = request.args.get('sort', 'id')
+    products = models.get_products(
+        search=search,
+        category_id=category_id,
+        min_price=min_price,
+        max_price=max_price,
+        on_sale=on_sale,
+        sort=sort,
+    )
+    return render_template(
+        'shop.html',
+        products=products,
+        categories=models.get_category_tree(),
+        filters={
+            'q': search, 'category': category_id, 'min_price': min_price,
+            'max_price': max_price, 'sale': on_sale, 'sort': sort,
+        },
+    )
 
 
 @shop_bp.route('/cart/add/<int:product_id>', methods=['POST'])
@@ -78,8 +105,21 @@ def add_to_cart(product_id):
 @shop_bp.route('/cart')
 def cart():
     lines = build_cart_lines()
-    total = round(sum(line['subtotal'] for line in lines), 2)
-    return render_template('cart.html', lines=lines, total=total, max_quantity=MAX_QUANTITY)
+    subtotal = round(sum(line['subtotal'] for line in lines), 2)
+    promo_code = session.get('promo_code')
+    promo = None
+    promo_discount = 0
+    promo_error = None
+    if promo_code:
+        promo, promo_error = models.validate_promocode(promo_code, subtotal)
+        if promo:
+            promo_discount = models.calculate_promocode_discount(promo, subtotal)
+    total = round(max(0, subtotal - promo_discount), 2)
+    return render_template(
+        'cart.html', lines=lines, subtotal=subtotal, promo_discount=promo_discount,
+        promo_code=promo_code, promo_error=promo_error, total=total,
+        max_quantity=MAX_QUANTITY,
+    )
 
 
 @shop_bp.route('/cart/update/<int:product_id>', methods=['POST'])
@@ -103,6 +143,32 @@ def remove_from_cart(product_id):
     return redirect(url_for('shop.cart'))
 
 
+@shop_bp.route('/cart/promo', methods=['POST'])
+def apply_promo():
+    code = request.form.get('promo_code', '').strip()
+    if not code:
+        session.pop('promo_code', None)
+        flash('Промокод видалено.', 'success')
+        return redirect(url_for('shop.cart'))
+    lines = build_cart_lines()
+    subtotal = round(sum(line['subtotal'] for line in lines), 2)
+    promo, error = models.validate_promocode(code, subtotal)
+    if error:
+        flash(error, 'error')
+        session.pop('promo_code', None)
+    else:
+        session['promo_code'] = promo['code']
+        flash(f'Промокод «{promo["code"]}» застосовано.', 'success')
+    return redirect(url_for('shop.cart'))
+
+
+@shop_bp.route('/cart/promo/remove', methods=['POST'])
+def remove_promo():
+    session.pop('promo_code', None)
+    flash('Промокод видалено.', 'success')
+    return redirect(url_for('shop.cart'))
+
+
 @shop_bp.route('/checkout', methods=['POST'])
 def checkout():
     email = request.form.get('email', '').strip()
@@ -112,11 +178,14 @@ def checkout():
         return redirect(url_for('shop.cart'))
 
     try:
-        order_id = models.create_order(email, address, get_cart())
-    except ValueError:
-        flash('Кошик порожній.', 'error')
+        order_id = models.create_order(
+            email, address, get_cart(), promo_code=session.get('promo_code')
+        )
+    except ValueError as error:
+        flash(str(error) if str(error) != 'Кошик порожній' else 'Кошик порожній.', 'error')
         return redirect(url_for('shop.cart'))
 
     save_cart({})
+    session.pop('promo_code', None)
     flash(f'Замовлення №{order_id} оформлено. Дякуємо!', 'success')
     return redirect(url_for('shop.shop'))
