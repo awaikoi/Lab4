@@ -1,0 +1,97 @@
+
+{% extends "base.html" %}
+{% from "_macros.html" import admin_nav, status_badge %}
+{% block title %}Деталі замовлення{% endblock %}
+{% block content %}
+
+<h1 class="mb-4 text-3xl font-bold text-ink">Адмін-панель</h1>
+{{ admin_nav('orders') }}
+
+<h2 class="mb-4 text-2xl font-semibold text-ink">
+    Замовлення №{{ order['id'] }}
+</h2>
+
+{# Інформація про замовлення #}
+<div class="mb-6 rounded-xl border border-line bg-white/30 p-5">
+    <dl class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-ink">
+        <dt class="font-semibold">Email:</dt>
+        <dd>{{ order['email'] }}</dd>
+
+        <dt class="font-semibold">Адреса:</dt>
+        <dd>{{ order['address'] }}</dd>
+
+        <dt class="font-semibold">Загальна сума:</dt>
+        <dd>{{ order['total_price']|money }}</dd>
+
+        <dt class="font-semibold">Статус:</dt>
+        <dd>{{ status_badge(order['status']) }}</dd>
+
+        <dt class="font-semibold">Дата:</dt>
+        <dd>{{ order['date'] }}</dd>
+    </dl>
+</div>
+
+{# Товари в замовленні #}
+<h3 class="mb-2 text-xl font-bold text-ink">Товари в замовленні</h3>
+
+<div class="mb-6 overflow-hidden rounded-xl border border-line bg-white/25">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+            <thead>
+                <tr class="border-b border-line bg-white/30 text-ink/70">
+                    <th class="px-5 py-3">Назва</th>
+                    <th class="px-5 py-3">Ціна</th>
+                    <th class="px-5 py-3">Кількість</th>
+                    <th class="px-5 py-3">Сума</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y divide-line text-ink">
+                {% for item in items %}
+                <tr class="transition-colors hover:bg-white/25">
+                    <td class="px-5 py-3">{{ item['name'] }}</td>
+                    <td class="px-5 py-3">{{ item['unit_price']|money }}</td>
+                    <td class="px-5 py-3">{{ item['quantity'] }}</td>
+                    <td class="px-5 py-3">
+                        {{ (item['unit_price'] * item['quantity'])|money }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# Зміна статусу #}
+<h3 class="mb-2 text-xl font-bold text-ink">
+    Змінити статус замовлення
+</h3>
+
+<div class="mb-6 rounded-xl border border-line bg-white/30 p-5">
+    <form action="{{ url_for('admin.update_order', order_id=order['id']) }}"
+          method="post"
+          class="flex flex-wrap items-center gap-3">
+
+        <select name="status"
+                class="rounded-md border border-line bg-white/40 p-2 text-ink outline-none focus:border-accent"
+                aria-label="Статус замовлення">
+            {% for status in statuses %}
+            <option value="{{ status }}" {% if order['status'] == status %}selected{% endif %}>
+                {{ status }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit"
+                class="rounded-md bg-accent px-4 py-2 text-white transition hover:opacity-85">
+            Оновити статус
+        </button>
+    </form>
+</div>
+
+<a href="{{ url_for('admin.admin') }}"
+   class="text-accent hover:underline">
+    ← Повернутися до списку замовлень
+</a>
+
+{% endblock %}
