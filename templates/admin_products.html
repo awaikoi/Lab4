@@ -15,7 +15,13 @@
         <img src="{{ product['image'] }}" alt="{{ product['name'] }}" class="mb-3 h-40 w-full rounded-lg object-contain">
         {% endif %}
         <h2 class="font-semibold">{{ product['name'] }}</h2>
+        {% if product['category_name'] %}<p class="text-xs text-ink/60">{{ product['category_name'] }}</p>{% endif %}
+        {% if product['discount_percent'] and product['discount_percent'] > 0 %}
+        <p class="mt-1 text-sm text-ink/50 line-through">{{ product['price']|money }}</p>
+        <p class="mb-3 font-bold text-accent">{{ (product['price'] * (1 - product['discount_percent'] / 100))|round(2)|money }} (-{{ product['discount_percent']|int }}%)</p>
+        {% else %}
         <p class="mb-3">{{ product['price']|money }}</p>
+        {% endif %}
         <div class="flex gap-2">
             <a href="{{ url_for('admin.edit_product', product_id=product['id']) }}" class="rounded-lg border border-line px-3 py-1.5">Редагувати</a>
             <form method="post" action="{{ url_for('admin.delete_product', product_id=product['id']) }}" onsubmit="return confirm('Видалити товар?')">

@@ -2,6 +2,26 @@
 {% block title %}Магазин{% endblock %}
 {% block content %}
 <h1 class="mb-5 text-2xl font-bold">Магазин</h1>
+<form method="get" class="mb-6 grid grid-cols-1 gap-3 rounded-xl border border-line bg-white/20 p-4 md:grid-cols-6">
+    <input name="q" value="{{ filters.q }}" placeholder="Пошук товару" class="rounded-lg border border-line bg-white/70 px-3 py-2 md:col-span-2">
+    <select name="category" class="rounded-lg border border-line bg-white/70 px-3 py-2">
+        <option value="">Усі категорії</option>
+        {% for category in categories %}
+        <option value="{{ category.id }}" {{ 'selected' if filters.category == category.id }}>{{ '— ' * category.level }}{{ category.name }}</option>
+        {% endfor %}
+    </select>
+    <input name="min_price" type="number" min="0" step="0.01" value="{{ filters.min_price if filters.min_price is not none }}" placeholder="Ціна від" class="rounded-lg border border-line bg-white/70 px-3 py-2">
+    <input name="max_price" type="number" min="0" step="0.01" value="{{ filters.max_price if filters.max_price is not none }}" placeholder="Ціна до" class="rounded-lg border border-line bg-white/70 px-3 py-2">
+    <select name="sort" class="rounded-lg border border-line bg-white/70 px-3 py-2">
+        <option value="id" {{ 'selected' if filters.sort == 'id' }}>Спочатку нові</option>
+        <option value="price" {{ 'selected' if filters.sort == 'price' }}>Спочатку дешевші</option>
+        <option value="price_desc" {{ 'selected' if filters.sort == 'price_desc' }}>Спочатку дорожчі</option>
+        <option value="name" {{ 'selected' if filters.sort == 'name' }}>За назвою</option>
+    </select>
+    <label class="flex items-center gap-2 text-sm md:col-span-2"><input type="checkbox" name="sale" value="1" {{ 'checked' if filters.sale }}> Лише зі знижкою</label>
+    <button class="rounded-lg bg-accent px-4 py-2 text-white md:col-span-2">Знайти</button>
+    <a href="{{ url_for('shop.shop') }}" class="rounded-lg border border-line px-4 py-2 text-center md:col-span-2">Скинути</a>
+</form>
 {% if products %}
 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
     {% for product in products %}
@@ -12,7 +32,13 @@
         <img src="{{ product['image'] }}" alt="{{ product['name'] }}" class="mb-3 h-48 w-full rounded-lg object-contain">
         {% endif %}
         <h2 class="font-semibold">{{ product['name'] }}</h2>
-        <p class="mb-3">{{ product['price']|money }}</p>
+        {% if product.category_name %}<p class="mt-1 text-xs text-ink/60">{{ product.category_name }}</p>{% endif %}
+        {% if product.discount_percent and product.discount_percent > 0 %}
+        <p class="mb-1 text-sm text-ink/50 line-through">{{ product.price|money }}</p>
+        <p class="mb-3 font-bold text-accent">{{ (product.price * (1 - product.discount_percent / 100))|round(2)|money }} <span class="ml-1 rounded bg-accent px-2 py-0.5 text-xs text-white">-{{ product.discount_percent|int }}%</span></p>
+        {% else %}
+        <p class="mb-3">{{ product.price|money }}</p>
+        {% endif %}
         <form method="post" action="{{ url_for('shop.add_to_cart', product_id=product['id']) }}">
             <button class="rounded-lg bg-accent px-4 py-2 text-white">До кошика</button>
         </form>

@@ -112,6 +112,18 @@ def read_product_form():
         return None, 'Вкажіть назву товару.'
     if price < 0:
         return None, 'Ціна не може бути від\'ємною.'
+    try:
+        discount_percent = round(float(request.form.get('discount_percent', '0').replace(',', '.')), 2)
+    except ValueError:
+        return None, 'Знижка має бути числом.'
+    if discount_percent < 0 or discount_percent > 100:
+        return None, 'Знижка має бути в межах від 0 до 100%.'
+    try:
+        category_id = int(request.form.get('category_id')) if request.form.get('category_id') else None
+    except ValueError:
+        category_id = None
+    if category_id is not None and models.get_category(category_id) is None:
+        return None, 'Невідома категорія.'
     image_data, image_mimetype, image_error = read_uploaded_image()
     if image_error:
         return None, image_error
@@ -121,12 +133,18 @@ def read_product_form():
         'image': image,
         'image_data': image_data,
         'image_mimetype': image_mimetype,
+        'discount_percent': discount_percent,
+        'category_id': category_id,
     }, None
 
 
 @admin_bp.route('/products')
 def products():
-    return render_template('admin_products.html', products=models.get_products())
+    return render_template(
+        'admin_products.html',
+        products=models.get_products(),
+        categories=models.get_categories(),
+    )
 
 
 @admin_bp.route('/products/new', methods=['GET', 'POST'])
@@ -138,7 +156,12 @@ def new_product():
             flash(f'Товар «{data["name"]}» додано.', 'success')
             return redirect(url_for('admin.products'))
         flash(error, 'error')
-    return render_template('product_form.html', product=request.form.to_dict(), is_new=True)
+    return render_template(
+        'product_form.html',
+        product=request.form.to_dict(),
+        categories=models.get_category_tree(),
+        is_new=True,
+    )
 
 
 @admin_bp.route('/products/<int:product_id>/edit', methods=['GET', 'POST'])
@@ -155,7 +178,12 @@ def edit_product(product_id):
             return redirect(url_for('admin.products'))
         flash(error, 'error')
         product = request.form.to_dict()  # показуємо форму з тим, що ввів користувач
-    return render_template('product_form.html', product=product, is_new=False)
+    return render_template(
+        'product_form.html',
+        product=product,
+        categories=models.get_category_tree(),
+        is_new=False,
+    )
 
 
 @admin_bp.route('/products/<int:product_id>/delete', methods=['POST'])
@@ -167,3 +195,58 @@ def delete_product(product_id):
         # Спрацював зовнішній ключ: товар є в існуючих замовленнях
         flash('Не можна видалити товар, який є в замовленнях.', 'error')
     return redirect(url_for('admin.products'))
+
+
+# -------------------------------------------------------- категорії та промокоди
+
+@admin_bp.route('/categories', methods=['GET', 'POST'])
+def categories():
+    if request.method == 'POST':
+        try:
+            parent_id = int(request.form.get('parent_id')) if request.form.get('parent_id') else None
+            models.add_category(request.form.get('name', ''), parent_id)
+            flash('Категорію додано.', 'success')
+        except (ValueError, sqlite3.IntegrityError) as error:
+            flash(str(error), 'error')
+        return redirect(url_for('admin.categories'))
+    return render_template(
+        'admin_categories.html',
+        categories=models.get_category_tree(),
+        all_categories=models.get_categories(),
+    )
+
+
+@admin_bp.route('/categories/<int:category_id>/delete', methods=['POST'])
+def delete_category(category_id):
+    models.delete_category(category_id)
+    flash('Категорію видалено.', 'success')
+    return redirect(url_for('admin.categories'))
+
+
+@admin_bp.route('/promocodes', methods=['GET', 'POST'])
+def promocodes():
+    if request.method == 'POST':
+        try:
+            percent = float(request.form.get('discount_percent', '0').replace(',', '.'))
+            amount = float(request.form.get('discount_amount', '0').replace(',', '.'))
+            minimum = float(request.form.get('min_order', '0').replace(',', '.'))
+            models.add_promocode(
+                request.form.get('code', ''),
+                discount_percent=percent,
+                discount_amount=amount,
+                min_order=minimum,
+                active=request.form.get('active') == '1',
+                expires_at=request.form.get('expires_at', '').strip() or None,
+            )
+            flash('Промокод створено.', 'success')
+        except (ValueError, sqlite3.IntegrityError) as error:
+            flash(str(error), 'error')
+        return redirect(url_for('admin.promocodes'))
+    return render_template('admin_promocodes.html', promocodes=models.get_promocodes())
+
+
+@admin_bp.route('/promocodes/<int:promo_id>/delete', methods=['POST'])
+def delete_promocode(promo_id):
+    models.delete_promocode(promo_id)
+    flash('Промокод видалено.', 'success')
+    return redirect(url_for('admin.promocodes'))

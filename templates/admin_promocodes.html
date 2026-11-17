@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import admin_nav %}
+{% block title %}Промокоди{% endblock %}
+{% block content %}
+{{ admin_nav('promocodes') }}
+<h1 class="mb-5 text-2xl font-bold">Промокоди</h1>
+<form method="post" class="mb-6 grid gap-3 rounded-xl border border-line bg-white/20 p-4 md:grid-cols-6">
+    <label class="md:col-span-2"><span class="mb-1 block text-sm font-medium">Код</span><input name="code" required class="w-full rounded-lg border border-line bg-white/70 px-3 py-2"></label>
+    <label><span class="mb-1 block text-sm font-medium">Знижка %</span><input name="discount_percent" type="number" min="0" max="100" step="0.01" value="0" class="w-full rounded-lg border border-line bg-white/70 px-3 py-2"></label>
+    <label><span class="mb-1 block text-sm font-medium">Фіксована грн</span><input name="discount_amount" type="number" min="0" step="0.01" value="0" class="w-full rounded-lg border border-line bg-white/70 px-3 py-2"></label>
+    <label><span class="mb-1 block text-sm font-medium">Мін. сума</span><input name="min_order" type="number" min="0" step="0.01" value="0" class="w-full rounded-lg border border-line bg-white/70 px-3 py-2"></label>
+    <label><span class="mb-1 block text-sm font-medium">Дійсний до</span><input name="expires_at" type="date" class="w-full rounded-lg border border-line bg-white/70 px-3 py-2"></label>
+    <label class="flex items-center gap-2 md:col-span-5"><input type="checkbox" name="active" value="1" checked> Активний</label>
+    <button class="rounded-lg bg-accent px-4 py-2 text-white">Створити</button>
+</form>
+{% if promocodes %}
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm"><thead><tr class="border-b border-line"><th class="p-3">Код</th><th class="p-3">Знижка</th><th class="p-3">Мін. сума</th><th class="p-3">Діє до</th><th class="p-3">Статус</th><th></th></tr></thead>
+<tbody>{% for promo in promocodes %}<tr class="border-b border-line">
+<td class="p-3 font-bold">{{ promo.code }}</td>
+<td class="p-3">{{ promo.discount_percent }}% / {{ promo.discount_amount|money }}</td>
+<td class="p-3">{{ promo.min_order|money }}</td>
+<td class="p-3">{{ promo.expires_at or 'Безстроково' }}</td>
+<td class="p-3">{{ 'Активний' if promo.active else 'Неактивний' }}</td>
+<td class="p-3"><form method="post" action="{{ url_for('admin.delete_promocode', promo_id=promo.id)}}" onsubmit="return confirm('Видалити промокод?')"><button class="font-semibold text-red-800">Видалити</button></form></td>
+</tr>{% endfor %}</tbody></table></div>
+{% else %}<p class="text-ink/70">Промокодів ще немає.</p>{% endif %}
+{% endblock %}

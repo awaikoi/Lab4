@@ -30,7 +30,7 @@
                     </h2>
 
                     <p class="mt-1 text-sm text-ink/60">
-                        Ціна за одиницю: {{ line.product['price']|money }}
+                        Ціна за одиницю: {{ line.unit_price|money }}
                     </p>
                 </div>
 
@@ -93,7 +93,26 @@
 
     </div>
 
+    <form action="{{ url_for('shop.apply_promo') }}" method="post" class="mt-6 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-white/20 p-4">
+        <label class="grow">
+            <span class="mb-1 block text-sm font-medium">Промокод</span>
+            <input name="promo_code" value="{{ promo_code or '' }}" placeholder="Введіть промокод" class="w-full rounded-lg border border-line bg-white/70 px-3 py-2">
+        </label>
+        <button type="submit" class="rounded-lg bg-accent px-4 py-2 text-white">Застосувати</button>
+    </form>
+    {% if promo_code %}
+    <form action="{{ url_for('shop.remove_promo') }}" method="post" class="mt-2">
+        <button type="submit" class="rounded-lg border border-line px-4 py-2">Видалити промокод</button>
+    </form>
+    {% endif %}
+
     <div class="mt-6 flex flex-col items-end rounded-xl border border-line bg-white/20 p-5">
+        {% if promo_code %}
+        <p class="text-sm text-ink/70">Сума товарів: {{ subtotal|money }}</p>
+        {% endif %}
+        {% if promo_discount %}
+        <p class="mt-1 text-sm font-semibold text-accent">Знижка промокоду: -{{ promo_discount|money }}</p>
+        {% endif %}
         <p class="text-sm text-ink/70">
             Загальна сума замовлення
         </p>
